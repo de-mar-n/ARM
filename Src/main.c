@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "myprintf.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -115,10 +116,6 @@ int main(void)
     if (received)
     {
       received = false;
-      if (c >= 'a' && c <= 'z')
-        c -= 32;
-      else if (c >= 'A' && c <= 'Z')
-        c += 32;
       HAL_UART_Transmit (&huart1, &c, 1, 200);
       HAL_UART_Receive_IT (&huart1, &c, 1);
     }
