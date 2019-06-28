@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "myprintf.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,14 +44,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
-static bool received = false;
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART1)
-  {
-    received = true;
-  }
-}
 
 /* USER CODE BEGIN PV */
 
@@ -113,12 +104,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    if (received)
-    {
-      received = false;
-      HAL_UART_Transmit (&huart1, &c, 1, 200);
-      HAL_UART_Receive_IT (&huart1, &c, 1);
-    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
