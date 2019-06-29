@@ -26,10 +26,11 @@
 #include "HASH/hash.h"
 #include "HASH/Common/hash_common.h"
 #include "HASH/SHA256/sha256.h"
+#include "sha256.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+static char *boot_screen = "Press u in the next 5s to update the firmware\n";
+static char *hash_err = "Error hash not equivalent\n";
+static char *flash_err == "Error during the flash reprogramming\n";
 UART_HandleTypeDef huart1;
 static bool received = false;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -68,17 +72,126 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 int update_binary(void);
+int erase_sector(void);
+int read_and_flash(void);
+int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size)
+{
+  uint32_t i = 0;
+  HAL_StatusTypeDef ret;
+  if ((size % 64) == 0)
+  {
+    while (i < (size / 64))
+    {
+      ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x8020000 + 256 * cnt + i * 64, (uint64_t *)new_firm);
+      if (ret != HAL_OK)
+      {
+        HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
+        return -1;
+      }
+      ++i;
+    }
+  }
+  else
+  {
+    while (i < (size / 8))
+    {
+      HAL_FLASH_PROGRAM(FLASH_TYPEPROGRAM_BYTE, 0x8020000 + 256 * cnt + i * 64, new_firm);
+      if (ret != HAL_OK)
+      {
+        HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
+        return -1;
+      }
+      ++i;
+    }
+  }
+  return 0;
+}
+
+int read_and_flash(void)
+{
+  uint32_t sz = 0;
+  int8_t recv_size[10] = {0}; // 10 numbers + end
+  uint8_t hash_firm[32] = {0}; //hash
+  uint8_t comp_hash[32] = {0}; //computed hash
+  uint8_t new_firm[256] = {0}; // blocks of 256 bytes
+  uint32_t cnt = 0; // number of blocks of firm written already
+  SHA256_CTX ctx;
+
+  sha256_init(&ctx);
+  HAL_UART_Receive_IT(&huart1, (uint8_t*)recv_size, 10);
+  HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 500);
+  HAL_UART_Receive_IT(&huart1, hash_firm, 32);
+  HAL_UART_Transmit(&huart1, (uint8_t*)",", 1, 500);
+  sz = atoi((char*)recv_size);
+  for (int i = 0; i < (sz / 256); ++i)
+  {
+    HAL_UART_Receive_IT(&huart1, new_firm, 256);
+    HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 500);
+    sha256_update(&ctx, new_firm, 256);
+    //flash()
+    ++cnt;
+    memset(new_firm, 0, sizeof(new_firm));
+  }
+  if ((sz % 256) != 0)
+  {
+    HAL_UART_Receive_IT(&huart1, new_firm, sz % 256);
+    HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 500);
+    sha256_update(&ctx, new_firm, sz % 256);
+    //flash()
+    ++cnt;
+  }
+
+  sha256_final(&ctx, comp_hash);
+  for (int i = 0; i < 32; ++i)
+  {
+    if (comp_hash[i] != hash_firm[i]) {
+      HAL_UART_Transmit(&huart1, (uint8_t*)hash_err, strlen(hash_err), 500);
+      return -1;
+    }
+  }
+
+  return 0;
+}
+int erase_sector(void)
+{
+  HAL_StatusTypeDef retval;
+  uint32_t *sect_err = NULL;
+  FLASH_EraseInitTypeDef erase;
+  erase.TypeErase = FLASH_TYPEERASE_SECTORS;
+  erase.Sector = FLASH_SECTOR_5;
+  erase.NbSectors = 1;
+  erase.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+  retval = HAL_FLASHEx_Erase(&erase, sect_err);
+  if (retval != HAL_OK) {
+    HAL_UART_Transmit(&huart1, (uint8_t*)"Err erase\n", 10, 200);
+    return -1;
+  }
+
+  return 0;
+}
+
 int update_binary(void)
 {
-  unsigned char out[32];
-  unsigned char d = 'j';
-  HAL_UART_Transmit(&huart1, &d, 1, 200);
-  memset(out, 36, sizeof(out));
-  HAL_UART_Transmit(&huart1, out, 32, 200);
+  int ret;
+  HAL_FLASH_Unlock();
+  ret = erase_sector();
+  if (ret == -1)
+    return -1;
+
+  HAL_UART_Transmit(&huart1, (uint8_t*)"Reading new firmware blob\n", 26, 200);
+
+  ret = read_and_flash();
+  if (ret == -1)
+    return -1;
+
+  //set_and_jump_to_new_firmware()
+  HAL_FLASH_Lock();
   return 0;
 }
 /* USER CODE END 0 */
@@ -119,6 +232,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_UART_Transmit(&huart1, (uint8_t*)boot_screen, strlen(boot_screen), 1000);
   unsigned char c;
   HAL_UART_Receive (&huart1, &c, 1, 5000);
   if (c == 'u') {
@@ -126,32 +240,10 @@ int main(void)
     HAL_UART_Transmit(&huart1, &c, 1, 200);
     int ret = 0;
     do {
+      HAL_UART_Receive_IT(&huart1, &c, 1);
       ret = update_binary();
     } while (ret == -1);
   }
-  unsigned char hello[] = "hello!";
-  unsigned char out[32];
-  uint8_t tmp[32];
-  int32_t sz = 32;
-
-  SHA256ctx_stt ctx;
-  c = 'j';
-  HAL_UART_Transmit(&huart1, &c, 1, 200);
-  ctx.mFlags = E_HASH_DEFAULT;
-  ctx.mTagSize = 32;
-  int ret = SHA256_Init(&ctx);
-  if (ret == HASH_ERR_BAD_PARAMETER)
-    HAL_UART_Transmit(&huart1, &c, 1, 300);
-  c = 'k';
-  HAL_UART_Transmit(&huart1, &c, 1, 200);
-  SHA256_Append(&ctx, hello, sizeof(hello));
-  c = 'z';
-  HAL_UART_Transmit(&huart1, &c, 1, 200);
-  SHA256_Finish(&ctx, tmp, &sz);
-  c = 's';
-  HAL_UART_Transmit(&huart1, &c, 1, 200);
-  for (int i = 0; i < 32; ++i)
-    HAL_UART_Transmit(&huart1, &out[i], 1, 200);
   HAL_UART_Receive_IT(&huart1, &c, 1);
   while (1)
   {
