@@ -19,7 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "myprintf.h"
-
+#include "mbedtls/md.h"
+#include "mbedtls/debug.h"
+#include "mbedtls/sha256.h"
+#include "Common/err_codes.h"
+#include "HASH/hash.h"
+#include "HASH/Common/hash_common.h"
+#include "HASH/SHA256/sha256.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
@@ -61,12 +67,20 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+int update_binary(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int update_binary(void)
+{
+  unsigned char out[32];
+  unsigned char d = 'j';
+  HAL_UART_Transmit(&huart1, &d, 1, 200);
+  memset(out, 36, sizeof(out));
+  HAL_UART_Transmit(&huart1, out, 32, 200);
+  return 0;
+}
 /* USER CODE END 0 */
 
 /**
@@ -106,7 +120,39 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   unsigned char c;
-  HAL_UART_Receive_IT (&huart1, &c, 1);
+  HAL_UART_Receive (&huart1, &c, 1, 5000);
+  if (c == 'u') {
+    c = 'a';
+    HAL_UART_Transmit(&huart1, &c, 1, 200);
+    int ret = 0;
+    do {
+      ret = update_binary();
+    } while (ret == -1);
+  }
+  unsigned char hello[] = "hello!";
+  unsigned char out[32];
+  uint8_t tmp[32];
+  int32_t sz = 32;
+
+  SHA256ctx_stt ctx;
+  c = 'j';
+  HAL_UART_Transmit(&huart1, &c, 1, 200);
+  ctx.mFlags = E_HASH_DEFAULT;
+  ctx.mTagSize = 32;
+  int ret = SHA256_Init(&ctx);
+  if (ret == HASH_ERR_BAD_PARAMETER)
+    HAL_UART_Transmit(&huart1, &c, 1, 300);
+  c = 'k';
+  HAL_UART_Transmit(&huart1, &c, 1, 200);
+  SHA256_Append(&ctx, hello, sizeof(hello));
+  c = 'z';
+  HAL_UART_Transmit(&huart1, &c, 1, 200);
+  SHA256_Finish(&ctx, tmp, &sz);
+  c = 's';
+  HAL_UART_Transmit(&huart1, &c, 1, 200);
+  for (int i = 0; i < 32; ++i)
+    HAL_UART_Transmit(&huart1, &out[i], 1, 200);
+  HAL_UART_Receive_IT(&huart1, &c, 1);
   while (1)
   {
     /* USER CODE END WHILE */
