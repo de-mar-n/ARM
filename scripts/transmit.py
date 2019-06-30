@@ -15,7 +15,7 @@ def sendToUart(uart, data, blocksize=256):
         if counter % 100 == 0:
             r = r + uart.read(100)
         if counter % blocksize == 0:
-            sleep(0.5)
+            sleep(0.7)
     r = r + uart.read(counter % 100)
 
 
@@ -42,13 +42,14 @@ with open (sys.argv[1], 'rb') as f:
 print("Size: {0}".format(size))
 print("SHA256: {0}".format(sha256.hexdigest()))
 print("Data: " + str(sdata))
-uart = serial.Serial('/dev/ttyUSB0', 9600)
+uart = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01)
 print(uart)
 print("Send Size")
 
+sendToUart(uart, b"u")
+sleep(1)
 sendToUart(uart, str(size).zfill(10).encode('utf-8'))
 sleep(0.5)
-
 sendToUart(uart, sha256.digest())
 sleep(0.5)
 
