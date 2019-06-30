@@ -1,6 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import serial, hashlib, sys, os, struct
 from time import sleep
+
+r = b''
+
+def sendToUart(uart, data, blocksize=256):
+    global r
+    counter = 0
+    for d in data:
+        print("tr: " + str(bytes([d])))
+        uart.write(bytes([d]))
+        counter += 1
+        sleep(0.01)
+        if counter % 100 == 0:
+            r = r + uart.read(100)
+        if counter % blocksize == 0:
+            sleep(0.5)
+    r = r + uart.read(counter % 100)
+
 
 if len(sys.argv) < 2:
     print("Missing arg");
@@ -24,21 +41,20 @@ with open (sys.argv[1], 'rb') as f:
         
 print("Size: {0}".format(size))
 print("SHA256: {0}".format(sha256.hexdigest()))
-sdata = struct.pack('>i', size) + sha256.digest() + sdata
 print("Data: " + str(sdata))
-uart = serial.Serial('/dev/ttyUSB0', 115200)
-r = b''
+uart = serial.Serial('/dev/ttyUSB0', 9600)
 print(uart)
-for d in sdata:
-    print("tr: " + str(bytes([d])))
-    uart.write(bytes([d]))
-    counter += 1
-    sleep(0.01)
-    if counter % 100 == 0:
-        r = r + uart.read(100)
+print("Send Size")
 
-print("end")
-r = r + uart.read(counter % 100)
+sendToUart(uart, str(size).zfill(10).encode('utf-8'))
+sleep(0.5)
+
+sendToUart(uart, sha256.digest())
+sleep(0.5)
+
+sendToUart(uart, sdata)
+
+
 print("re: " + str(r))
 print ("Equal: " + str(sdata == r))
 uart.close()
