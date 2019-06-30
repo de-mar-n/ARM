@@ -33,7 +33,7 @@ for d in sdata:
     print("tr: " + str(bytes([d])))
     uart.write(bytes([d]))
     counter += 1
-    sleep(0.005)
+    sleep(0.01)
     if counter % 100 == 0:
         r = r + uart.read(100)
 

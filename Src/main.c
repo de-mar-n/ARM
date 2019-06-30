@@ -51,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 static char *boot_screen = "Press u in the next 5s to update the firmware\n";
 static char *hash_err = "Error hash not equivalent\n";
-static char *flash_err == "Error during the flash reprogramming\n";
+static char *flash_err = "Error during the flash reprogramming\n";
 UART_HandleTypeDef huart1;
 static bool received = false;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -83,12 +83,12 @@ int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size);
 int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size)
 {
   uint32_t i = 0;
-  HAL_StatusTypeDef ret;
+  HAL_StatusTypeDef ret = 0;
   if ((size % 64) == 0)
   {
     while (i < (size / 64))
     {
-      ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x8020000 + 256 * cnt + i * 64, (uint64_t *)new_firm);
+      ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x8020000 + 256 * cnt + i * 64, new_firm[i * 64]);
       if (ret != HAL_OK)
       {
         HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
@@ -99,9 +99,9 @@ int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size)
   }
   else
   {
-    while (i < (size / 8))
+    while (i < size)
     {
-      HAL_FLASH_PROGRAM(FLASH_TYPEPROGRAM_BYTE, 0x8020000 + 256 * cnt + i * 64, new_firm);
+      ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, 0x8020000 + 256 * cnt + i, new_firm[i]);
       if (ret != HAL_OK)
       {
         HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
