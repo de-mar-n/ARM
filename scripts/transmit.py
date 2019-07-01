@@ -15,7 +15,7 @@ def sendToUart(uart, data, blocksize=256):
         if counter % 100 == 0:
             r = r + uart.read(100)
         if counter % blocksize == 0:
-            sleep(0.7)
+            r = r + uart.read_until(b'.')
     r = r + uart.read(counter % 100)
 
 
@@ -47,12 +47,14 @@ print(uart)
 print("Send Size")
 
 sendToUart(uart, b"u")
-sleep(1)
-sendToUart(uart, str(size).zfill(10).encode('utf-8'))
-sleep(0.5)
-sendToUart(uart, sha256.digest())
-sleep(0.5)
 
+r = r + uart.read_until(b'.')
+sendToUart(uart, str(size).zfill(10).encode('utf-8'))
+
+r = r + uart.read_until(b'.')
+sendToUart(uart, sha256.digest())
+
+r = r + uart.read_until(b'.')
 sendToUart(uart, sdata)
 
 
