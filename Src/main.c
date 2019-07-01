@@ -78,7 +78,7 @@ static void MX_USART1_UART_Init(void);
 int update_binary(void);
 int erase_sector(void);
 int read_and_flash(void);
-int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size);
+int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size);
 void jump_to_app(void);
 /* USER CODE END PFP */
 
@@ -102,38 +102,40 @@ void jump_to_app(void)
   func();
 }
 
-int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint8_t size)
+int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size)
 {
   uint32_t i = 0;
   HAL_StatusTypeDef ret = 0;
-  if ((size % 64) == 0)
-  {
-    while (i < (size / 8))
-    {
-      ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x08020000 + 256 * cnt + i * 8, new_firm[i * 8]);
-      FLASH_WaitForLastOperation(500);
-      if (ret != HAL_OK)
-      {
-        HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
-        return -1;
-      }
-      ++i;
-    }
-  }
-  else
-  {
+ // if ((size % 64) == 0)
+ // {
+ //   while (i < (size / 8))
+ //   {
+ //     ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x08020000 + 256 * cnt + i * 8, new_firm[i * 8]);
+////      FLASH_WaitForLastOperation(500);
+ //     if (ret != HAL_OK)
+ //     {
+ //       HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
+ //       HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 300);
+ //       return -1;
+ //     }
+ //     ++i;
+ //   }
+ // }
+ // else
+ // {
     while (i < size)
     {
       ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, 0x08020000 + 256 * cnt + i, new_firm[i]);
-      FLASH_WaitForLastOperation(500);
+ //     FLASH_WaitForLastOperation(500);
       if (ret != HAL_OK)
       {
         HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
+        HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 300);
         return -1;
       }
       ++i;
     }
-  }
+//  }
   return 0;
 }
 
@@ -162,6 +164,7 @@ int read_and_flash(void)
   HAL_UART_Transmit(&huart1, (uint8_t*)hash_firm, 32, 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)comma, 1, 200);
   sz = atoi((char*)recv_size);
+
   for (int i = 0; i < (sz / 256); ++i)
   {
     myprintint(i, &huart1);
@@ -170,7 +173,7 @@ int read_and_flash(void)
     while (!received);
     received = false;
     sha256_update(&ctx, new_firm, 256);
-    flash_chunk(new_firm, cnt, (uint8_t)256);
+    flash_chunk(new_firm, cnt, 256);
     ++cnt;
     memset(new_firm, 0, sizeof(new_firm));
   }
@@ -197,7 +200,7 @@ int read_and_flash(void)
     }
   }
   HAL_UART_Transmit(&huart1, (uint8_t *)"pipi ", 4, 200);
-  HAL_UART_Transmit(&huart1, (uint8_t *)0x08020000, 64, 200);
+  HAL_UART_Transmit(&huart1, (uint8_t *)0x08020000, 257, 300);
   HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 200);
 
   return 0;
@@ -217,7 +220,6 @@ int erase_sector(void)
     HAL_UART_Transmit(&huart1, (uint8_t*)sect_err, 8, 500);
     return -1;
   }
-//  CLEAR_BIT(FLASH->CR, (FLASH_CR,PER));
 
   return 0;
 }
@@ -291,7 +293,7 @@ int main(void)
       ret = update_binary();
     } while (ret == -1);
   }
-  jump_to_app();
+//  jump_to_app();
   HAL_UART_Receive_IT(&huart1, &c, 1);
   while (1)
   {
