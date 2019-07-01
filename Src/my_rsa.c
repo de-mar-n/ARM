@@ -54,18 +54,23 @@ int generate_RSA_key( void )
     if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
             return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
     HAL_Delay(1000);
+    mbedtls_md_init(&rng_ctx.md_ctx);
     ret = mbedtls_hmac_drbg_seed_buf( &rng_ctx, md_info, seed, 10 );
     HAL_Delay(1000);
 
-return ret;
-    //mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0);
+    mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0);
+    HAL_Delay(20000);
+
     if( ( ret = mbedtls_rsa_gen_key( &rsa, mbedtls_hmac_drbg_random, &rng_ctx, KEY_SIZE,
                              EXPONENT ) ) != 0 )
     {
-      ret = 1;
+      HAL_Delay(20000);
+
+        return ret;
         goto exit;
     }
-
+    ret = 99;
+    return ret;
   /*  if( ( ret = mbedtls_mpi_write_file( "N = " , &rsa.N , 16, fpriv ) ) != 0 ||
         ( ret = mbedtls_mpi_write_file( "E = " , &rsa.E , 16, fpriv ) ) != 0 ||
         ( ret = mbedtls_mpi_write_file( "D = " , &rsa.D , 16, fpriv ) ) != 0 ||
