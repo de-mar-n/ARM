@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include "main.h"
 #include "mbedtls.h"
 #include "mbedtls/config.h"
 #include "mbedtls/platform.h"
@@ -48,15 +48,17 @@ int generate_RSA_key( void )
     const unsigned char *seed = "seedishere"; //seed for random number generator
 
     mbedtls_hmac_drbg_init( &rng_ctx );
+    /*if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
+        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );*/
+
     if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
-
-    return ret;
+            return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+    HAL_Delay(1000);
     ret = mbedtls_hmac_drbg_seed_buf( &rng_ctx, md_info, seed, 10 );
+    HAL_Delay(1000);
 
-
-    mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0 );
-
+return ret;
+    //mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0);
     if( ( ret = mbedtls_rsa_gen_key( &rsa, mbedtls_hmac_drbg_random, &rng_ctx, KEY_SIZE,
                              EXPONENT ) ) != 0 )
     {

@@ -147,7 +147,7 @@
  *
  * Enable this layer to allow use of alternative memory allocators.
  */
-//#define MBEDTLS_PLATFORM_MEMORY
+#define MBEDTLS_PLATFORM_MEMORY
 
 /**
  * \def MBEDTLS_PLATFORM_NO_STD_FUNCTIONS
@@ -1043,7 +1043,7 @@
  * \note The entropy collector will write to the seed file before entropy is
  *       given to an external source, to update it.
  */
-//#define MBEDTLS_ENTROPY_NV_SEED
+#define MBEDTLS_ENTROPY_NV_SEED
 
 /**
  * \def MBEDTLS_MEMORY_DEBUG
@@ -1088,7 +1088,7 @@
  *
  * This enables support for PKCS#1 v1.5 operations.
  */
-//#define MBEDTLS_PKCS1_V15
+#define MBEDTLS_PKCS1_V15
 
 /**
  * \def MBEDTLS_PKCS1_V21
@@ -1099,7 +1099,7 @@
  *
  * This enables support for RSAES-OAEP and RSASSA-PSS operations.
  */
-#define MBEDTLS_PKCS1_V21
+//#define MBEDTLS_PKCS1_V21
 
 /**
  * \def MBEDTLS_RSA_NO_CRT
@@ -2272,7 +2272,7 @@
  *            it, and considering stronger message digests instead.
  *
  */
-//#define MBEDTLS_MD5_C
+ #define MBEDTLS_MD5_C
 
 /**
  * \def MBEDTLS_MEMORY_BUFFER_ALLOC_C
@@ -2962,7 +2962,7 @@
  *            on it, and considering stronger message digests instead.
  *
  */
-//#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
+#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 
 /**
  * Uncomment the macro to let mbed TLS use your alternate implementation of
