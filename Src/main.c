@@ -49,6 +49,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+static char *welcome = "Welcome to a bootloader better than GRUB2!";
+static char *update_mess = "Updating, please wait";
 static char *erase_err = "Error during erase of the flash\n";
 static char *hash_err = "Error hash not equivalent\n";
 static char *flash_err = "Error during the flash reprogramming\n";
@@ -126,19 +128,23 @@ int read_and_flash(void)
   SHA256_CTX ctx;
 
   sha256_init(&ctx);
+  HAL_UART_Transmit(&huart1, (uint8_t*)"Computing sha", strlen("Computing sha"), 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 200);
   HAL_UART_Receive_IT(&huart1, (uint8_t*)recv_size, 10);
   while (!received);
   received = false;
+  HAL_UART_Transmit(&huart1, (uint8_t*)recv_size, 10, 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 200);
   HAL_UART_Receive_IT(&huart1, hash_firm, 32);
   while (!received);
   received = false;
+  HAL_UART_Transmit(&huart1, (uint8_t*)"prout", strlen("prout"), 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)hash_firm, 32, 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)comma, 1, 200);
   sz = atoi((char*)recv_size);
   for (int i = 0; i < (sz / 256); ++i)
   {
+    myprintint(i, &huart1);
     HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 200);
     HAL_UART_Receive_IT(&huart1, new_firm, 256);
     while (!received);
@@ -150,6 +156,7 @@ int read_and_flash(void)
   }
   if ((sz % 256) != 0)
   {
+    HAL_UART_Transmit(&huart1, (uint8_t*)"else", strlen("else"), 200);
     HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 200);
     HAL_UART_Receive_IT(&huart1, new_firm, sz % 256);
     while (!received);
@@ -169,6 +176,7 @@ int read_and_flash(void)
       return -1;
     }
   }
+  HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 200);
 
   return 0;
 }
@@ -195,6 +203,7 @@ int update_binary(void)
 {
   int ret;
   HAL_FLASH_Unlock();
+  HAL_UART_Transmit(&huart1, (uint8_t *)update_mess, strlen(update_mess), 200);
   ret = erase_sector();
   if (ret == -1)
     return -1;
@@ -245,6 +254,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_UART_Transmit(&huart1, (uint8_t *)welcome, strlen(welcome), 200);
   unsigned char c;
   HAL_UART_Receive (&huart1, &c, 1, 5000);
   if (c == 'u') {
