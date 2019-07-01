@@ -1,4 +1,6 @@
-/* USER CODE BEGIN Header */ /** ******************************************************************************
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
@@ -7,31 +9,25 @@
   * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "myprintf.h"
-#include "Common/err_codes.h"
-#include "HASH/hash.h"
-#include "HASH/Common/hash_common.h"
-#include "HASH/SHA256/sha256.h"
-#include "RNG/rng.h"
-#include "RSA/rsa.h"
-#include "ED25519/ed25519.h"
-#include "mbedtls/sha256.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-//#include "RSA/PKCS#1v15/rsa_pkcs1v15.h"
+#include "main.h"
+#include "mbedtls.h"
+#include "myprintf.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdbool.h>
 
 /* USER CODE END Includes */
 
@@ -52,14 +48,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
-static bool received = false;
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART1)
-  {
-    received = true;
-  }
-}
 
 /* USER CODE BEGIN PV */
 
@@ -70,100 +58,13 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-int update_binary(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int update_binary(void)
-{
-  unsigned char out[32];
-  unsigned char d = 'j';
-  HAL_UART_Transmit(&huart1, &d, 1, 200);
-  memset(out, 36, sizeof(out));
-  HAL_UART_Transmit(&huart1, out, 32, 200);
-  return 0;
-}
+
 /* USER CODE END 0 */
-
-
-/*RSApubKey_stt generate_public_key()
-{
-  uint8_t public_key [32]; // Buffer for the public key
-  uint8_t signature[64];
-  uint8_t Secret_key [64] =
-    {0x4c, 0xcd, 0x08, 0x9b, 0x28, 0xff, 0x96, 0xda, 0x9d, 0xb6, 0xc3, 0x46,
-0xec, 0x11, 0x4e, 0x0f,0x5b, 0x8a, 0x31, 0x9f, 0x35, 0xab, 0xa6, 0x24, 0xda,
-0x8c, 0xf6, 0xed, 0x4f, 0xb8, 0xa6, 0xfb,0x3d, 0x40, 0x17, 0xc3, 0xe8, 0x43,
-0x89, 0x5a, 0x92, 0xb7, 0x0a, 0xa7, 0x4d, 0x1b, 0x7e, 0xbc,0x9c, 0x98, 0x2c,
-0xcf, 0x2e, 0xc4, 0x96, 0x8c, 0xc0, 0xcd, 0x55, 0xf1, 0x2a, 0xf4, 0x66,
-0x0c};
-const uint8_t ed25519_m[1] ={0x72};
-{
- int32_t status = ED25519_SUCCESS;
- // generate public key from the secret key
- status = ED25519keyGen(Secret_key, public_key);
- if (status == ED25519_SUCCESS)
- {
-   RSApubKey_stt pub_key_struct;
-   pub_key_struct.
- }
- return NULL;
-}
-*/
-RSApubKey_stt generate_public_key(){
-  uint8_t public_exponent [3]= {0x01, 0x00, 0x01};
-  uint8_t modulus [2048/8]= {42};
-
-  RSApubKey_stt pubKey;
-  // Set values of public key
-  pubKey.mExponentSize = sizeof (public_exponent);
-  pubKey.pmExponent = public_exponent;
-  pubKey.mModulusSize = sizeof (modulus);
-  pubKey.pmModulus = modulus;
-  return pubKey;
-}
-
-
-RNGstate_stt generate_RNGstate()
-{
-  RNGstate_stt RNGstate;
-  RNGinitInput_stt RNGinit_st;
-  uint8_t entropy_data[32]={0x9d,0x20,0x1a,0x18,0x9b,0x6d,0x1a,0xa7,0x0e,0x79,0x57,0x6f,0x36,0xb6,0xaa,0x88,0x55,0xfd,0x4a,0x7f,0x97,0xe9,0x71,0x69,0xb6,0x60,
-0x88,0x78,0xe1,0x9c,0x8b,0xa5};
- uint8_t nonce[4] = {0,1,2,3};
- uint8_t randombytes [16];
-
- RNGinit_st.pmEntropyData = entropy_data;
- RNGinit_st.mEntropyDataSize = sizeof (entropy_data);
- RNGinit_st.pmNonce = nonce;
- RNGinit_st.mNonceSize = sizeof (nonce);
-
- RNGinit_st.mPersDataSize = 0;
- RNGinit_st.pmPersData = NULL;
-
- /* Init the random engine */
- if ( RNGinit(&RNGinit_st, &RNGstate) != 0)
-  myprintint(3, &huart1);
-  /* Generate */
-  uint8_t retval = RNGgenBytes(&RNGstate, NULL, randombytes,sizeof(randombytes));
-  if (retval != 0)
-    myprintint(4, &huart1);
-  return RNGstate;
-}
-
-
-/**
-  * @brief  RSA Signature Generation with PKCS#1v1.5
-  * @param  P_pPrivKey The RSA private key structure, already initialized
-  * @param  P_pInputMessage Input Message to be signed
-  * @param  P_MessageSize Size of input message
-  * @param  P_pOutput Pointer to output buffer
-  * @retval error status: can be RSA_SUCCESS if success or one of
-  * RSA_ERR_BAD_PARAMETER, RSA_ERR_UNSUPPORTED_HASH, RSA_ERR_BAD_KEY, ERR_MEMORY_FAIL
-  * RSA_ERR_MODULUS_TOO_SHORT
-*/
-
 
 /**
   * @brief  The application entry point.
@@ -195,112 +96,32 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-    // Set values of private key
-  /*  privKey.mExponentSize = sizeof (private_exponent);
-    privKey.pmExponent = private_exponent;
-    privKey.mModulusSize = sizeof (modulus);
-    privKey.pmModulus = modulus;
-*/
-    // generate the signature, knowing that the hash has been generated by SHA256
-    /*int32_t retval;
-    // ------------------ RNG --------------------
-    RNGstate_stt RNGstate;
-    RNGinitInput_stt RNGinit_st;
-    uint8_t entropy_data[32]={0x9d,0x20,0x1a,0x18,0x9b,0x6d,0x1a,0xa7,0x0e,0x79,0x57,0x6f,0x36,0xb6,0xaa,0x88,0x55,0xfd,0x4a,0x7f,0x97,0xe9,0x71,0x69,0xb6,0x60,
-  0x88,0x78,0xe1,0x9c,0x8b,0xa5};
-   uint8_t nonce[4] = {0,1,2,3};
-   uint8_t randombytes [16];
+    int i;
+    unsigned char x[32];
+    unsigned char y[256];
+    size_t y_len = sizeof(y);
+    memset(x, 0, sizeof(x));
+    memset(y, 0, sizeof(y));
+    // Here you should fill y with the data you want to hash
+    // Example: y[0] = 1;
+    y[0] = 1;
+    //y_len should be set to the length of the data you put in y
+    // Example y_len = 1;
+    y_len = 1;
+    mbedtls_sha256(y, y_len, x, 0);
 
-   RNGinit_st.pmEntropyData = entropy_data;
-   RNGinit_st.mEntropyDataSize = sizeof (entropy_data);
-   RNGinit_st.pmNonce = nonce;
-   RNGinit_st.mNonceSize = sizeof (nonce);
-
-   RNGinit_st.mPersDataSize = 0;
-   RNGinit_st.pmPersData = NULL;
-
-
-   if ( RNGinit(&RNGinit_st, &RNGstate) != 0)
-    myprintint(3, &huart1);
-
-    retval = RNGgenBytes(&RNGstate, NULL, randombytes,sizeof(randombytes));
-    if (retval != 0)
-      myprintint(4, &huart1);
-  // ------------------end RNG --------------------
-
-  // ----------------- PubKey ------------------
-  uint8_t exponent [3]= {0x01, 0x00, 0x01};
-  uint8_t modulus [2048/8]= {42};
-
-  RSApubKey_stt pubKey;
-  // Set values of public key
-  pubKey.mExponentSize = sizeof (public_exponent);
-  pubKey.pmExponent = public_exponent;
-  pubKey.mModulusSize = sizeof (modulus);
-  pubKey.pmModulus = modulus;
-  // ----------------- end PubKey ------------------
-
-
-    uint8_t output[2048];
-    const uint8_t in = 123;
-
-    RSAinOut_stt input;
-    input.pmInput = &in;
-    input.mInputSize = 5;
-    input.pmOutput = output;
-*/
-/*
-    membuf_stt membuf;
-    uint8_t buff_membuf[2048];
-    membuf.pmBuf = buff_membuf;
-    membuf.mSize = 2048;
-    membuf.mUsed = 0;
-
-    //myprintint(8, &huart1);
-    //retval = RSA_PKCS1v15_Encrypt(&pubKey, &input, &RNGstate, &membuf);
-     RSAprivKey_stt privKey;
-    uint8_t digest[CRL_SHA256_SIZE]= "nb";
-    uint8_t signature[2048/8];
-
-      // Set values of private key
-      privKey.mExponentSize = sizeof(exponent);
-      privKey.pmExponent = exponent;
-      privKey.mModulusSize = sizeof(modulus);
-      privKey.pmModulus = modulus;
-
-    uint32_t status =  RSA_PKCS1v15_Sign(&privKey, digest, E_SHA256, signature, &membuf);
-    myprintint(status, &huart1);
-//------------- COMMUNICATION UART ---------------------
-*/
-int i;
- unsigned char x[32];
- unsigned char y[256];
- size_t y_len = sizeof(y);
- memset(x, 0, sizeof(x));
- memset(y, 0, sizeof(y));
-
- // Here you should fill Y with the data you want to hash!
- // Example: y[0]=1;
-
- // y_len should be set to the length of the data you put in Y.
- // Example: y_len=1;
-
- mbedtls_sha256(y, y_len, x, 0);
-
- // X now contains SHA256(y)
- // Print it
- for(i = 0; i < 32; i++)
-     myprintf(x, &huart1);
+    // x now contains SHA256(y)
+    myprintf(x, &huart1);
   }
-
-
 }
 
 /**
