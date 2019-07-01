@@ -105,7 +105,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    int i;
+    // ----------- SHA256 ---------------
+  /*  int i;
     unsigned char x[32];
     unsigned char y[256];
     size_t y_len = sizeof(y);
@@ -120,7 +121,13 @@ int main(void)
     mbedtls_sha256(y, y_len, x, 0);
 
     // x now contains SHA256(y)
-    myprintf(x, &huart1);
+    myprintf(x, &huart1);*/
+    // ------------ END SHA256 ------------
+
+    // ----------- RSA -------------
+    generate_RSA_key();
+    // ------------ END RSA -----------
+
   }
 }
 

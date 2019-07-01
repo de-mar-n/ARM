@@ -38,6 +38,7 @@ BUILD_DIR = build
 C_SOURCES =  \
 Src/main.c \
 Src/myprintf.c \
+Src/my_rsa.c \
 Src/mbedtls.c \
 Src/stm32f4xx_it.c \
 Src/stm32f4xx_hal_msp.c \
@@ -131,7 +132,7 @@ Middlewares/Third_Party/mbedTLS/library/x509_create.c \
 Middlewares/Third_Party/mbedTLS/library/x509_crl.c \
 Middlewares/Third_Party/mbedTLS/library/x509_crt.c \
 Middlewares/Third_Party/mbedTLS/library/x509_csr.c \
-Middlewares/Third_Party/mbedTLS/library/xtea.c  
+Middlewares/Third_Party/mbedTLS/library/xtea.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -157,7 +158,7 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
- 
+
 #######################################
 # CFLAGS
 #######################################
@@ -168,14 +169,14 @@ CPU = -mcpu=cortex-m4
 FPU = -mfpu=fpv4-sp-d16
 
 # float-abi
-FLOAT-ABI = -mfloat-abi=hard
+FLOAT-ABI = -mfloat-abi=softfp
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 
 # macros for gcc
 # AS defines
-AS_DEFS = 
+AS_DEFS =
 
 # C defines
 C_DEFS =  \
@@ -185,7 +186,7 @@ C_DEFS =  \
 
 
 # AS includes
-AS_INCLUDES = 
+AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
@@ -220,9 +221,9 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F401RETx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LIBS = -lc -lm -lnosys
+LIBDIR =
+LDFLAGS = $(MCU) -specs=nano.specs -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -238,7 +239,7 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
@@ -250,19 +251,19 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
-	
+
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@	
-	
+	$(BIN) $< $@
+
 $(BUILD_DIR):
-	mkdir $@		
+	mkdir $@
 
 #######################################
 # clean up
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
-  
+
 #######################################
 # dependencies
 #######################################
