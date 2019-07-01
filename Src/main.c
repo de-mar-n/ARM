@@ -80,26 +80,58 @@ int erase_sector(void);
 int read_and_flash(void);
 int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size);
 void jump_to_app(void);
+void check_flash(uint8_t hash_firm[32], uint32_t size);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void check_flash(uint8_t hash_firm[32], uint32_t size)
+{
+  SHA256_CTX ctx;
+  uint8_t comp_hash[32] = {0};
+  uint8_t new_firm[256] = {0};
+  uint32_t cnt = 0;
+
+  sha256_init(&ctx);
+  for (int i = 0; i < (size / 256); ++i)
+  {
+    memcpy(new_firm, 0x8020000 + i * 256, 256);
+    sha256_update(&ctx, new_firm, 256);
+    memset(new_firm, 0, sizeof(new_firm));
+    ++cnt;
+  }
+  if ((size % 256) != 0)
+  {
+    memcpy(new_firm, 0x8020000 + cnt * 256, size % 256);
+    sha256_update(&ctx, new_firm, size % 256);
+    ++cnt;
+  }
+  sha256_final(&ctx, comp_hash);
+  HAL_UART_Transmit(&huart1, (uint8_t*)"check ", strlen("check "), 200);
+  HAL_UART_Transmit(&huart1, (uint8_t *)comp_hash, strlen(comp_hash), 200);
+}
+
 void jump_to_app(void)
 {
   HAL_UART_Transmit(&huart1, (uint8_t *)"jump ", 5, 200);
-  HAL_UART_DeInit(&huart1);
+ // HAL_UART_DeInit(&huart1);
   //RCC_APB2PeriphResetCmd(RCC_APB2Periph_USART1, ENABLE);
   //RCC_APB2PeriphResetCmd(RCC_APB2Periph_USART1, DISABLE);
-  HAL_DeInit();
-  __disable_irq();
   uint32_t addr = 0x08020000;
-  void (*func)(void) = 0x08020000+4;
+ // void (*func)(void) = addr+(uint32_t)4;
+  //HAL_RCC_DeInit();
+  //HAL_DeInit();
+  //__disable_irq();
 //  uint32_t func = (void(*)(void))(__IO uint32_t*)(addr + 4);   // Get func
-  __DSB();
-  __set_MSP(*(__IO uint32_t *)0x08020000);
+ // __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()
+ // __DSB();
+  //__ISB();
+ // __set_MSP(*(__IO uint32_t *)addr);
+  void (**user_entry)(void) = (void*)(addr + 4);
+  (**user_entry)();
 
-  func();
+//  func();
 }
 
 int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size)
@@ -200,7 +232,8 @@ int read_and_flash(void)
     }
   }
   HAL_UART_Transmit(&huart1, (uint8_t *)"pipi ", 4, 200);
-  HAL_UART_Transmit(&huart1, (uint8_t *)0x08020000, 257, 300);
+  check_flash(hash_firm, sz);
+//  HAL_UART_Transmit(&huart1, (uint8_t *)0x08020000, 257, 300);
   HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 200);
 
   return 0;
@@ -293,7 +326,7 @@ int main(void)
       ret = update_binary();
     } while (ret == -1);
   }
-//  jump_to_app();
+  jump_to_app();
   HAL_UART_Receive_IT(&huart1, &c, 1);
   while (1)
   {

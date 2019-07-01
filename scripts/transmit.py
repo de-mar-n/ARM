@@ -16,7 +16,7 @@ def waitForRec2(uart):
 
 def waitForRec3(uart):
     global r
-    r = r + uart.read_until(b'ffffff')
+    r = r + uart.read_until(b'F')
     sleep(0.1)
 def sendToUart(uart, data, blocksize=256):
     global r
@@ -72,6 +72,7 @@ waitForRec(uart)
 sendToUart(uart, sdata)
 
 waitForRec2(uart)
+waitForRec3(uart)
 print("re: " + str(r))
 uart.close()
 
