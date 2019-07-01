@@ -14,6 +14,10 @@ def waitForRec2(uart):
     r = r + uart.read_until(b'final')
     sleep(0.1)
 
+def waitForRec3(uart):
+    global r
+    r = r + uart.read_until(b'ffffff')
+    sleep(0.1)
 def sendToUart(uart, data, blocksize=256):
     global r
     counter = 0
@@ -69,6 +73,5 @@ sendToUart(uart, sdata)
 
 waitForRec2(uart)
 print("re: " + str(r))
-print ("Equal: " + str(sdata == r))
 uart.close()
 
