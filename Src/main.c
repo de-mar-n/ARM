@@ -121,13 +121,13 @@ void jump_to_app(void)
   uint32_t addr = 0x08020000;
  // void (*func)(void) = addr+(uint32_t)4;
   //HAL_RCC_DeInit();
-  //HAL_DeInit();
-  //__disable_irq();
+  HAL_DeInit();
+  __disable_irq();
 //  uint32_t func = (void(*)(void))(__IO uint32_t*)(addr + 4);   // Get func
  // __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()
  // __DSB();
   //__ISB();
- // __set_MSP(*(__IO uint32_t *)addr);
+  __set_MSP(*(__IO uint32_t *)addr);
   void (**user_entry)(void) = (void*)(addr + 4);
   (**user_entry)();
 
