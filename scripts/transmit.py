@@ -4,6 +4,12 @@ from time import sleep
 
 r = b''
 
+def waitForRec(uart):
+    global r
+    r = r + uart.read_until(b'.')
+    sleep(0.1)
+
+
 def sendToUart(uart, data, blocksize=256):
     global r
     counter = 0
@@ -15,7 +21,7 @@ def sendToUart(uart, data, blocksize=256):
         if counter % 100 == 0:
             r = r + uart.read(100)
         if counter % blocksize == 0:
-            r = r + uart.read_until(b'.')
+            waitForRec(uart)
     r = r + uart.read(counter % 100)
 
 
@@ -48,13 +54,13 @@ print("Send Size")
 
 sendToUart(uart, b"u")
 
-r = r + uart.read_until(b'.')
+waitForRec(uart)
 sendToUart(uart, str(size).zfill(10).encode('utf-8'))
 
-r = r + uart.read_until(b'.')
+waitForRec(uart)
 sendToUart(uart, sha256.digest())
 
-r = r + uart.read_until(b'.')
+waitForRec(uart)
 sendToUart(uart, sdata)
 
 
