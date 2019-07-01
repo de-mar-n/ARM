@@ -103,6 +103,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
     // ----------- SHA256 ---------------
@@ -125,8 +126,12 @@ int main(void)
     // ------------ END SHA256 ------------
 
     // ----------- RSA -------------
-    generate_RSA_key();
+
     // ------------ END RSA -----------
+    int ret = generate_RSA_key();
+    myprintf("\r\n", &huart1);
+    myprintint(ret, &huart1);
+    myprintf("\r\n", &huart1);
 
   }
 }

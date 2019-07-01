@@ -45,16 +45,15 @@ int generate_RSA_key( void )
     mbedtls_rsa_context rsa;
     mbedtls_hmac_drbg_context rng_ctx;
     const mbedtls_md_info_t *md_info;
-    FILE *fpub  = NULL;
-    FILE *fpriv = NULL;
     const unsigned char *seed = "seedishere"; //seed for random number generator
 
     mbedtls_hmac_drbg_init( &rng_ctx );
-
     if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
         return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
 
-    mbedtls_hmac_drbg_seed_buf( &rng_ctx, md_info, seed, 10 );
+    return ret;
+    ret = mbedtls_hmac_drbg_seed_buf( &rng_ctx, md_info, seed, 10 );
+
 
     mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0 );
 
@@ -65,7 +64,7 @@ int generate_RSA_key( void )
         goto exit;
     }
 
-    if( ( ret = mbedtls_mpi_write_file( "N = " , &rsa.N , 16, fpriv ) ) != 0 ||
+  /*  if( ( ret = mbedtls_mpi_write_file( "N = " , &rsa.N , 16, fpriv ) ) != 0 ||
         ( ret = mbedtls_mpi_write_file( "E = " , &rsa.E , 16, fpriv ) ) != 0 ||
         ( ret = mbedtls_mpi_write_file( "D = " , &rsa.D , 16, fpriv ) ) != 0 ||
         ( ret = mbedtls_mpi_write_file( "P = " , &rsa.P , 16, fpriv ) ) != 0 ||
@@ -76,8 +75,8 @@ int generate_RSA_key( void )
     {
       ret = 9;
         goto exit;
-    }
-
+    }*/
+ret = 8;
 exit:
 
     return( ret );

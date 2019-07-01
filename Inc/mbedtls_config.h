@@ -1,5 +1,5 @@
 /* USER CODE BEGIN Header */
-/** 
+/**
   ******************************************************************************
   * File Name       : mbedtls_config.h
   * Description     : the mbedtls custom config header file.
@@ -655,7 +655,7 @@
  *
  * Comment this macro to disable deterministic ECDSA.
  */
-//#define MBEDTLS_ECDSA_DETERMINISTIC
+#define MBEDTLS_ECDSA_DETERMINISTIC
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
@@ -968,7 +968,7 @@
  *
  * Requires: MBEDTLS_BIGNUM_C
  */
-//#define MBEDTLS_GENPRIME
+#define MBEDTLS_GENPRIME
 
 /**
  * \def MBEDTLS_FS_IO
@@ -1099,7 +1099,7 @@
  *
  * This enables support for RSAES-OAEP and RSASSA-PSS operations.
  */
-//#define MBEDTLS_PKCS1_V21
+#define MBEDTLS_PKCS1_V21
 
 /**
  * \def MBEDTLS_RSA_NO_CRT
@@ -2204,7 +2204,7 @@
  *
  * Uncomment to enable the HMAC_DRBG random number geerator.
  */
-//#define MBEDTLS_HMAC_DRBG_C
+#define MBEDTLS_HMAC_DRBG_C
 
 /**
  * \def MBEDTLS_MD_C
@@ -2517,7 +2517,7 @@
  *
  * Requires: MBEDTLS_BIGNUM_C, MBEDTLS_OID_C
  */
-//#define MBEDTLS_RSA_C
+#define MBEDTLS_RSA_C
 
 /**
  * \def MBEDTLS_SHA1_C
@@ -2539,7 +2539,7 @@
  *            on it, and considering stronger message digests instead.
  *
  */
-//#define MBEDTLS_SHA1_C
+#define MBEDTLS_SHA1_C
 
 /**
  * \def MBEDTLS_SHA256_C
@@ -3009,6 +3009,6 @@
 #endif
 #include "mbedtls/check_config.h"
 
-/* USER CODE END 1 */ 
+/* USER CODE END 1 */
 
 #endif /* MBEDTLS_CONFIG_H */
