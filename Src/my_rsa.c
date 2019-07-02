@@ -20,19 +20,7 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#include <stdio.h>
-#include <string.h>
-#include "main.h"
-#include "mbedtls.h"
-#include "mbedtls/config.h"
-#include "mbedtls/platform.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/hmac_drbg.h"
-#include "mbedtls/bignum.h"
-#include "mbedtls/x509.h"
-#include "mbedtls/rsa.h"
-
+#include "my_rsa.h"
 
 
 //#define KEY_SIZE 2048
