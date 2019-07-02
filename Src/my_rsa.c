@@ -35,7 +35,8 @@
 
 
 
-#define KEY_SIZE 2048
+//#define KEY_SIZE 2048
+#define KEY_SIZE 128 // for testing
 #define EXPONENT 65537
 
 
@@ -48,8 +49,8 @@ int generate_RSA_key( void )
     const unsigned char *seed = "seedishere"; //seed for random number generator
 
     mbedtls_hmac_drbg_init( &rng_ctx );
-    /*if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );*/
+    if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
+        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
 
     if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
             return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
@@ -65,25 +66,13 @@ int generate_RSA_key( void )
                              EXPONENT ) ) != 0 )
     {
       HAL_Delay(20000);
-
+        ret = 5678;
         return ret;
         goto exit;
     }
-    ret = 99;
+    ret = 123;
     return ret;
-  /*  if( ( ret = mbedtls_mpi_write_file( "N = " , &rsa.N , 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "E = " , &rsa.E , 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "D = " , &rsa.D , 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "P = " , &rsa.P , 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "Q = " , &rsa.Q , 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "DP = ", &rsa.DP, 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "DQ = ", &rsa.DQ, 16, fpriv ) ) != 0 ||
-        ( ret = mbedtls_mpi_write_file( "QP = ", &rsa.QP, 16, fpriv ) ) != 0 )
-    {
-      ret = 9;
-        goto exit;
-    }*/
-ret = 8;
+
 exit:
 
     return( ret );
