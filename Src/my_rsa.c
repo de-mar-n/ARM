@@ -27,26 +27,48 @@
 #define KEY_SIZE 128 // for testing
 #define EXPONENT 65537
 
-
-int generate_RSA_key( void )
+//FIXME
+// Sign a hash (sha-256) given by UART with private key
+int sign_hash(char *hash)
 {
-    int ret = 2;
+  hash = hash;
+  return 0;
+}
+
+//FIXME : WRONG DATA EXPORTING
+//
+int export_key_on_UART(mbedtls_rsa_context *rsa, UART_HandleTypeDef *uart)
+{
+  myprintint(rsa->E.n, uart);
+  myprintint(rsa->N.n, uart);
+  return 0;
+}
+
+// Generate RSA keys
+union int_or_RSA generate_RSA_key( void )
+{
+    union int_or_RSA result;
+    int ret;
     mbedtls_rsa_context rsa;
     mbedtls_hmac_drbg_context rng_ctx;
     const mbedtls_md_info_t *md_info;
     const unsigned char *seed = "seedishere"; //seed for random number generator
 
+    // Init random genrator
     mbedtls_hmac_drbg_init( &rng_ctx );
     if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
-        return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+    {
+      result.int_error = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+      return result;
+    }
 
-    if( ( md_info = mbedtls_md_info_from_type( MBEDTLS_MD_SHA1 ) ) == NULL )
-            return( MBEDTLS_ERR_ECP_BAD_INPUT_DATA );
+    // Seeding
     HAL_Delay(1000);
     mbedtls_md_init(&rng_ctx.md_ctx);
     ret = mbedtls_hmac_drbg_seed_buf( &rng_ctx, md_info, seed, 10 );
     HAL_Delay(1000);
 
+    // Generate the key
     mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0);
     HAL_Delay(20000);
 
@@ -54,14 +76,9 @@ int generate_RSA_key( void )
                              EXPONENT ) ) != 0 )
     {
       HAL_Delay(20000);
-        ret = 5678;
-        return ret;
-        goto exit;
+      result.int_error = ret;
+      return result;
     }
-    ret = 123;
-    return ret;
-
-exit:
-
-    return( ret );
+    result.rsa = rsa;
+    return result;
 }

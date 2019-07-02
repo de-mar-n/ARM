@@ -126,13 +126,14 @@ int main(void)
     myprintf(x, &huart1);*/
     // ------------ END SHA256 ------------
 
-    // ----------- RSA -------------
+    // ----------- RSA TESTING-------------
 
-    // ------------ END RSA -----------
-    int ret = generate_RSA_key();
+    mbedtls_rsa_context rsa = (generate_RSA_key()).rsa;
     myprintf("\r\n", &huart1);
-    myprintint(ret, &huart1);
+    myprintint(rsa.len == 1, &huart1);
     myprintf("\r\n", &huart1);
+    // ------------ END RSA TESTING-----------
+
 
   }
 }
