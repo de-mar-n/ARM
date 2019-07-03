@@ -1,0 +1,38 @@
+                      -- ARM --
+
+This project is an RSA signature device.
+
+This project has been made by:
+    - Vincent Deville
+    - Kevin Tavukciyan
+    - Noemie de Martimprey
+
+
+* FEATURES
+
+    The MCU is loaded with a bootloader which have the following features:
+                - verify that the software to start is authenticated (signed)
+                - update the software to start in a secure way
+                  (it is not possible to put an arbitrary binary in flash)
+                - start the software in flash
+
+    The software to start will have the following features:
+                - generates an RSA private key (only one time)
+                - exports the associated public key on the UART
+                - sign a hash (sha-256) provided via the UART
+                  with the private key
+                - protects the use of the private key with a password
+
+
+* LAUNCHING
+
+    In order to launch you need to do theses commands:
+      ``
+
+
+* LIBRARY
+
+    This project uses the library Mbedtls 2.11.
+    The library is used mainly in the generation of the RSA keys,
+    indirectly in the export on UART of the public key and in the generation of the signature
+    of the hash.
