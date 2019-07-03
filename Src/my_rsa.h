@@ -25,4 +25,4 @@ union int_or_RSA
 };
 
 union int_or_RSA generate_RSA_key( void );
-int export_key_on_UART(/*UART_HandleTypeDef *uart*/);
+int export_key_on_UART(UART_HandleTypeDef *uart);

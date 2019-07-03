@@ -128,10 +128,12 @@ int main(void)
     // ------------ END SHA256 ------------
 
     // ----------- RSA TESTING-------------
-    int ret = export_key_on_UART();
+    char *output = export_key_on_UART(&huart1);
     myprintf("\r\n", &huart1);
     //myprintf(pk_key->pk_info->name, &huart1);
-    myprintint(ret, &huart1);
+    if (output == NULL)
+      myprintint(12345, &huart1);
+    myprintf(output, &huart1);
     myprintf("\r\n", &huart1);
     // ------------ END RSA TESTING-----------
 

@@ -42,7 +42,7 @@ int sign_hash(char *hash)
 // ------------------- End -------------------
 
 // ------------------- Export on UART -------------------
-int get_public_key_hash(mbedtls_pk_context *key)
+/*unsigned char *get_public_key_hash(mbedtls_pk_context *key)
 {
   int ret;
   unsigned char output_buf[BUFFER_SIZE];
@@ -51,15 +51,14 @@ int get_public_key_hash(mbedtls_pk_context *key)
 
   memset(output_buf, 0, BUFFER_SIZE);
   if( ( ret = mbedtls_pk_write_key_pem( key, output_buf, BUFFER_SIZE ) ) != 0 )
-    return( ret );
+    return NULL;
   len = strlen( (char *) output_buf );
 
-  return len;
-}
+  return output_buf;
+}*/
 
-int export_key_on_UART(/*UART_HandleTypeDef *uart*/)
+int export_key_on_UART(UART_HandleTypeDef *uart)
 {
-  int ret;
   mbedtls_pk_context pk_key = (generate_RSA_key()).pk_key;
   // Check the type and init the pk context
   /*if( mbedtls_pk_get_type( key ) == MBEDTLS_PK_RSA )
@@ -74,9 +73,23 @@ int export_key_on_UART(/*UART_HandleTypeDef *uart*/)
   else
     return 3; // wrong key type FIXME
 */
-  if ( ( ret = get_public_key_hash( &pk_key ) ) == 0)
-    return 897;
-  return 1234;
+
+//  output = get_public_key_hash( &pk_key );
+
+int ret;
+int len;
+unsigned char output_buf[BUFFER_SIZE];
+//unsigned char *c = output_buf;
+//HAL_Delay(1000);
+memset(output_buf, 0, BUFFER_SIZE);
+HAL_Delay(1000);
+if( ( ret = mbedtls_pk_write_pubkey_pem( &pk_key, output_buf, BUFFER_SIZE ) ) != 0 )
+  return "pas bon";
+HAL_Delay(1000);
+myprintf(output_buf, uart);
+HAL_Delay(1000);
+len = strlen( (char *) output_buf );
+  return len;
 }
 // ------------------- End -------------------
 
