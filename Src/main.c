@@ -26,6 +26,8 @@
 #include "main.h"
 #include "mbedtls.h"
 #include "mbedtls/pk.h"
+#include "mbedtls/sha256.h"
+#include "mbedtls/error.h"
 #include "myprintf.h"
 #include "my_rsa.h"
 /* Private includes ----------------------------------------------------------*/
@@ -105,35 +107,49 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  myprintf("\r\nBoot\r\n", &huart1);
 
+    myprintf("RSA keys generation\r\n", &huart1);
+    mbedtls_pk_context pk_key = (generate_RSA_key()).pk_key;
   while (1)
   {
     // ----------- SHA256 ---------------
-  /*  int i;
     unsigned char x[32];
-    unsigned char y[256];
+    unsigned char y[256] = "test\n";
     size_t y_len = sizeof(y);
     memset(x, 0, sizeof(x));
-    memset(y, 0, sizeof(y));
+    //memset(y, 0, sizeof(y));
     // Here you should fill y with the data you want to hash
     // Example: y[0] = 1;
-    y[0] = 1;
     //y_len should be set to the length of the data you put in y
     // Example y_len = 1;
-    y_len = 1;
+    y_len = strlen(y);
     mbedtls_sha256(y, y_len, x, 0);
 
     // x now contains SHA256(y)
-    myprintf(x, &huart1);*/
+    myprintf("sha256\r\n", &huart1);
+    for (int i = 0; i< sizeof(x); i++)
+      myprintuint8ashex(x[i], &huart1);
+    myprintf("\r\n", &huart1);
     // ------------ END SHA256 ------------
 
     // ----------- RSA TESTING-------------
-    char *output = export_key_on_UART(&huart1);
+    int output = export_key_on_UART(&huart1, &pk_key);
     myprintf("\r\n", &huart1);
     //myprintf(pk_key->pk_info->name, &huart1);
     if (output == NULL)
       myprintint(12345, &huart1);
-    myprintf(output, &huart1);
+    myprintint(output, &huart1);
+    myprintf("\r\n", &huart1);
+
+    unsigned char hash_signed[64];
+    memset(hash_signed, 0, sizeof(hash_signed));
+    int err = sign_hash(x, hash_signed, &pk_key);
+    char buffer[1024];
+    myprintint(err, &huart1);
+    myprintf("\r\n", &huart1);
+    for (int i = 0; i< sizeof(hash_signed); i++)
+      myprintuint8ashex(hash_signed[i], &huart1);
     myprintf("\r\n", &huart1);
     // ------------ END RSA TESTING-----------
 
@@ -195,7 +211,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

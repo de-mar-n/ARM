@@ -25,4 +25,6 @@ union int_or_RSA
 };
 
 union int_or_RSA generate_RSA_key( void );
-int export_key_on_UART(UART_HandleTypeDef *uart);
+int export_key_on_UART(UART_HandleTypeDef *uart, mbedtls_pk_context *pk_key);
+int sign_hash(unsigned char *hash, unsigned char* hash_signed,
+              mbedtls_pk_context *pk_key);
