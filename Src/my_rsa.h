@@ -12,13 +12,17 @@
 #include "mbedtls/bignum.h"
 #include "mbedtls/x509.h"
 #include "mbedtls/rsa.h"
+#include "mbedtls/pk.h"
 #include "myprintf.h"
+
+#include "mbedtls/x509_crt.h"
+
 
 union int_or_RSA
 {
   int int_error;
-  mbedtls_rsa_context rsa;
+  mbedtls_pk_context pk_key;
 };
 
 union int_or_RSA generate_RSA_key( void );
-int export_key_on_UART(mbedtls_rsa_context *rsa, UART_HandleTypeDef *uart);
+int export_key_on_UART(/*UART_HandleTypeDef *uart*/);

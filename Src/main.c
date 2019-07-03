@@ -25,6 +25,7 @@
 
 #include "main.h"
 #include "mbedtls.h"
+#include "mbedtls/pk.h"
 #include "myprintf.h"
 #include "my_rsa.h"
 /* Private includes ----------------------------------------------------------*/
@@ -127,10 +128,10 @@ int main(void)
     // ------------ END SHA256 ------------
 
     // ----------- RSA TESTING-------------
-
-    mbedtls_rsa_context rsa = (generate_RSA_key()).rsa;
+    int ret = export_key_on_UART();
     myprintf("\r\n", &huart1);
-    myprintint(rsa.len == 1, &huart1);
+    //myprintf(pk_key->pk_info->name, &huart1);
+    myprintint(ret, &huart1);
     myprintf("\r\n", &huart1);
     // ------------ END RSA TESTING-----------
 
