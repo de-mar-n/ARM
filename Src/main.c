@@ -19,7 +19,12 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdlib.h>
+#include "main.h"
+#include "mbedtls.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -30,8 +35,6 @@
 #include "mbedtls/error.h"
 #include "myprintf.h"
 #include "my_rsa.h"
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
@@ -54,6 +57,15 @@
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+bool received = false;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    received = true;
+  }
+}
 
 /* USER CODE END PV */
 
@@ -109,10 +121,29 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   myprintf("\r\nBoot\r\n", &huart1);
 
-    myprintf("RSA keys generation\r\n", &huart1);
-    mbedtls_pk_context pk_key = (generate_RSA_key()).pk_key;
+  myprintf("RSA keys generation\r\n", &huart1);
+  mbedtls_pk_context pk_key = (generate_RSA_key()).pk_key;
+
+  myprintf("Define Password\r\n", &huart1);
+  char password[32];
+  memset(password, 0, sizeof(password));
+  read_until(13, password, sizeof(password), &huart1);
+  myprintf(password, &huart1);
+  myprintf("\r\n", &huart1);
+
   while (1)
   {
+    myprintf("Type Password\r\n", &huart1);
+    char input[32];
+    memset(input, 0, sizeof(input));
+    read_until(13, input, sizeof(input), &huart1);
+    myprintf(input, &huart1);
+    myprintf("\r\n", &huart1);
+    if (strcmp(input, password) != 0)
+    {
+      myprintf("Wrong password\r\n", &huart1);
+      continue;
+    }
     // ----------- SHA256 ---------------
     unsigned char x[32];
     unsigned char y[256] = "test\n";
@@ -158,9 +189,9 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -183,7 +214,7 @@ void SystemClock_Config(void)
   /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -196,10 +227,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -229,10 +260,10 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
 
@@ -246,9 +277,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -259,17 +290,17 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
