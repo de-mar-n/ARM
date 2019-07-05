@@ -16,19 +16,20 @@ def waitForRec2(uart):
 
 def waitForRec3(uart):
     global r
-    r = r + uart.read_until(b'Hello World!')
+    r = r + uart.read_until(b'Boot')
     sleep(0.1)
 def sendToUart(uart, data, blocksize=256):
     global r
+    l = len(data)
     counter = 0
     for d in data:
-        print("tr: " + str(bytes([d])))
         uart.write(bytes([d]))
         counter += 1
-        sleep(0.01)
+        sleep(0.001)
   #      if counter % 100 == 0:
  #           r = r + uart.read(100)
         if counter % blocksize == 0:
+            print("progress :" + str(round(counter * 100 / l, 2)) + "%")
             waitForRec(uart)
 #    r = r + uart.read(counter % 100)
 
