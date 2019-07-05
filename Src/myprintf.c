@@ -14,6 +14,21 @@ void myprintint(int n, UART_HandleTypeDef* huart)
    HAL_UART_Transmit(huart, (uint8_t*) buffer, strlen(buffer), 1000);
 }
 
+void myprintfixnewlines(char *str, UART_HandleTypeDef* huart)
+{
+   char buffer[MY_PRINTF_BUFFER_SIZE];
+   int len = strlen(str);
+   int j = 0;
+   for (int i = 0; i < strlen(str); i++)
+   {
+     if (str[i] == '\n')
+       buffer[j++] = '\r';
+     buffer[j++] = str[i];
+   }
+   buffer[j] = 0;
+   HAL_UART_Transmit(huart, (uint8_t*) buffer, strlen(buffer), 1000);
+}
+
 char uint8tohex(uint8_t u)
 {
   if (u > 9)

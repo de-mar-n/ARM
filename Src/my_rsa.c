@@ -116,7 +116,7 @@ int export_key_on_UART(UART_HandleTypeDef *uart, mbedtls_pk_context *pk_key)
   if( ( ret = mbedtls_pk_write_pubkey_pem( pk_key, output_buf, BUFFER_SIZE ) ) != 0 )
     return "pas bon";
   HAL_Delay(1000);
-  myprintf(output_buf, uart);
+  myprintfixnewlines(output_buf, uart);
   HAL_Delay(1000);
   len = strlen( (char *) output_buf );
   return len;

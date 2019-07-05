@@ -131,6 +131,10 @@ int main(void)
 
   while (1)
   {
+    myprintf("\r\nPublic RSA key in PEM format\r\n", &huart1);
+    int output = export_key_on_UART(&huart1, &pk_key);
+    myprintf("\r\n", &huart1);
+
     myprintf("Type Password\r\n", &huart1);
     char input[32];
     memset(input, 0, sizeof(input));
@@ -140,28 +144,31 @@ int main(void)
       myprintf("Wrong password\r\n", &huart1);
       continue;
     }
+    myprintf("Password OK\r\n", &huart1);
 
     myprintf("Enter sha256\r\n", &huart1);
     char sha256_input[65];
     memset(sha256_input, 0, sizeof(sha256_input));
     read_until(13, sha256_input, sizeof(sha256_input), &huart1);
+    myprintf(sha256_input, &huart1);
+    myprintf("\r\n", &huart1);
+    if (strlen(sha256_input) != 64)
+    {
+      myprintf("Invalid sha256\r\n", &huart1);
+      continue;
+    }
 
     uint8_t sha256[32];
     sha256_to_binary(sha256_input, sha256);
     // ------------ END SHA256 ------------
 
     // ----------- RSA TESTING-------------
-    int output = export_key_on_UART(&huart1, &pk_key);
-    myprintf("\r\n", &huart1);
-    myprintint(output, &huart1);
-    myprintf("\r\n", &huart1);
 
     unsigned char hash_signed[64];
     memset(hash_signed, 0, sizeof(hash_signed));
     int err = sign_hash(sha256, hash_signed, &pk_key);
     char buffer[1024];
-    myprintint(err, &huart1);
-    myprintf("\r\n", &huart1);
+    myprintf("Signature in hexadecimal\r\n", &huart1);
     for (int i = 0; i< sizeof(hash_signed); i++)
       myprintuint8ashex(hash_signed[i], &huart1);
     myprintf("\r\n", &huart1);

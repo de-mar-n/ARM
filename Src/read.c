@@ -19,8 +19,6 @@ void read_until(char c, char* buffer, size_t size, UART_HandleTypeDef *huart)
     received = false;
   }
   buffer[i] = 0;
-  myprintf(buffer, huart);
-  myprintf("\r\n", huart);
 }
 
 uint8_t hex_to_int(char c)
