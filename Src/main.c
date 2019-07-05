@@ -128,8 +128,6 @@ int main(void)
   char password[32];
   memset(password, 0, sizeof(password));
   read_until(13, password, sizeof(password), &huart1);
-  myprintf(password, &huart1);
-  myprintf("\r\n", &huart1);
 
   while (1)
   {
@@ -137,45 +135,30 @@ int main(void)
     char input[32];
     memset(input, 0, sizeof(input));
     read_until(13, input, sizeof(input), &huart1);
-    myprintf(input, &huart1);
-    myprintf("\r\n", &huart1);
     if (strcmp(input, password) != 0)
     {
       myprintf("Wrong password\r\n", &huart1);
       continue;
     }
-    // ----------- SHA256 ---------------
-    unsigned char x[32];
-    unsigned char y[256] = "test\n";
-    size_t y_len = sizeof(y);
-    memset(x, 0, sizeof(x));
-    //memset(y, 0, sizeof(y));
-    // Here you should fill y with the data you want to hash
-    // Example: y[0] = 1;
-    //y_len should be set to the length of the data you put in y
-    // Example y_len = 1;
-    y_len = strlen(y);
-    mbedtls_sha256(y, y_len, x, 0);
 
-    // x now contains SHA256(y)
-    myprintf("sha256\r\n", &huart1);
-    for (int i = 0; i< sizeof(x); i++)
-      myprintuint8ashex(x[i], &huart1);
-    myprintf("\r\n", &huart1);
+    myprintf("Enter sha256\r\n", &huart1);
+    char sha256_input[65];
+    memset(sha256_input, 0, sizeof(sha256_input));
+    read_until(13, sha256_input, sizeof(sha256_input), &huart1);
+
+    uint8_t sha256[32];
+    sha256_to_binary(sha256_input, sha256);
     // ------------ END SHA256 ------------
 
     // ----------- RSA TESTING-------------
     int output = export_key_on_UART(&huart1, &pk_key);
     myprintf("\r\n", &huart1);
-    //myprintf(pk_key->pk_info->name, &huart1);
-    if (output == NULL)
-      myprintint(12345, &huart1);
     myprintint(output, &huart1);
     myprintf("\r\n", &huart1);
 
     unsigned char hash_signed[64];
     memset(hash_signed, 0, sizeof(hash_signed));
-    int err = sign_hash(x, hash_signed, &pk_key);
+    int err = sign_hash(sha256, hash_signed, &pk_key);
     char buffer[1024];
     myprintint(err, &huart1);
     myprintf("\r\n", &huart1);
