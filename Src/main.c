@@ -115,50 +115,24 @@ void check_flash(uint8_t hash_firm[32], uint32_t size)
 void jump_to_app(void)
 {
   HAL_UART_Transmit(&huart1, (uint8_t *)"jump ", 5, 200);
- // HAL_UART_DeInit(&huart1);
-  //RCC_APB2PeriphResetCmd(RCC_APB2Periph_USART1, ENABLE);
-  //RCC_APB2PeriphResetCmd(RCC_APB2Periph_USART1, DISABLE);
   uint32_t addr = 0x08020000;
- // void (*func)(void) = addr+(uint32_t)4;
-  //HAL_RCC_DeInit();
+
   HAL_DeInit();
   __disable_irq();
-//  uint32_t func = (void(*)(void))(__IO uint32_t*)(addr + 4);   // Get func
- // __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()
- // __DSB();
-  //__ISB();
   __set_MSP(*(__IO uint32_t *)addr);
   void (**user_entry)(void) = (void*)(addr + 4);
   (**user_entry)();
 
-//  func();
 }
 
 int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size)
 {
   uint32_t i = 0;
   HAL_StatusTypeDef ret = 0;
- // if ((size % 64) == 0)
- // {
- //   while (i < (size / 8))
- //   {
- //     ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, 0x08020000 + 256 * cnt + i * 8, new_firm[i * 8]);
-////      FLASH_WaitForLastOperation(500);
- //     if (ret != HAL_OK)
- //     {
- //       HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
- //       HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 300);
- //       return -1;
- //     }
- //     ++i;
- //   }
- // }
- // else
- // {
-    while (i < size)
+
+  while (i < size)
     {
       ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, 0x08020000 + 256 * cnt + i, new_firm[i]);
- //     FLASH_WaitForLastOperation(500);
       if (ret != HAL_OK)
       {
         HAL_UART_Transmit(&huart1, (uint8_t*)flash_err, strlen(flash_err), 300);
@@ -167,7 +141,6 @@ int flash_chunk(uint8_t *new_firm, uint32_t cnt, uint16_t size)
       }
       ++i;
     }
-//  }
   return 0;
 }
 
@@ -192,7 +165,6 @@ int read_and_flash(void)
   HAL_UART_Receive_IT(&huart1, hash_firm, 32);
   while (!received);
   received = false;
-  HAL_UART_Transmit(&huart1, (uint8_t*)"prout", strlen("prout"), 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)hash_firm, 32, 200);
   HAL_UART_Transmit(&huart1, (uint8_t*)comma, 1, 200);
   sz = atoi((char*)recv_size);
@@ -231,9 +203,7 @@ int read_and_flash(void)
       return -1;
     }
   }
-  HAL_UART_Transmit(&huart1, (uint8_t *)"pipi ", 4, 200);
   check_flash(hash_firm, sz);
-//  HAL_UART_Transmit(&huart1, (uint8_t *)0x08020000, 257, 300);
   HAL_UART_Transmit(&huart1, (uint8_t *)"final", strlen("final"), 200);
 
   return 0;
@@ -273,7 +243,6 @@ int update_binary(void)
   if (ret == -1)
     return -1;
 
-  //set_and_jump_to_new_firmware()
   HAL_FLASH_Lock();
   return 0;
 }
