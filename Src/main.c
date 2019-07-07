@@ -118,7 +118,7 @@ void jump_to_app(void)
   uint32_t addr = 0x08020000;
 
   HAL_DeInit();
-  __disable_irq();
+ // __disable_irq();
   __set_MSP(*(__IO uint32_t *)addr);
   void (**user_entry)(void) = (void*)(addr + 4);
   (**user_entry)();
