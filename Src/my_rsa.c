@@ -24,7 +24,7 @@
 
 // For RSA generation
 //#define KEY_SIZE 2048
-#define KEY_SIZE 128// for testing
+#define KEY_SIZE 512// for testing
 #define EXPONENT 65537
 
 // For exporting on UART
